@@ -53,7 +53,7 @@ module SolidState
         trans = self.class.instance_variable_get('@__transitions')[from_state]
         if trans
           tran = trans[name]
-          tran.call if tran
+          self.instance_eval trans if tran
         end
       end
       found = _find_state(name)
