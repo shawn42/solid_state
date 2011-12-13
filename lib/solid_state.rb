@@ -1,5 +1,10 @@
 module SolidState
-
+  class State
+    attr_reader :stated
+    def initialize(stated)
+      @stated = stated
+    end
+  end
   class InvalidStateError < RuntimeError; end
 
   # On include, setup all required methods
@@ -12,7 +17,7 @@ module SolidState
 
     # Define a state
     def state(name, &block)
-      klass = const_set("State_#{name}", Class.new(self))
+      klass = const_set("State_#{name}", Class.new(State))
       klass.send(:define_method, :state_name) { name }
       klass.class_eval(&block)
     end
@@ -21,7 +26,7 @@ module SolidState
     def starting_state(name)
       self.send(:define_method, :__start_state) { name }
     end
-
+    
   end
 
   module InstanceMethods
@@ -71,7 +76,7 @@ module SolidState
     def _get_state_const(const_name)
       self.class.ancestors.each do |klass|
         if klass.const_defined?(const_name)
-          return klass.const_get(const_name).new
+          return klass.const_get(const_name).new self
         end
       end
 
