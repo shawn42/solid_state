@@ -26,7 +26,14 @@ module SolidState
     def starting_state(name)
       self.send(:define_method, :__start_state) { name }
     end
-    
+
+    def transition(pair, &blk)
+      pair.each do |from, to|
+        @__transitions ||= {} 
+        @__transitions[from] ||= {} 
+        @__transitions[from] = blk
+      end
+    end
   end
 
   module InstanceMethods
@@ -40,8 +47,18 @@ module SolidState
 
     # Change the current state
     def change_state!(name)
+      from_state = current_state
+
+      unless from_state == name
+        trans = self.class.instance_variable_get('@__transitions')[from_state]
+        if trans
+          tran = trans[name]
+          tran.call if tran
+        end
+      end
       found = _find_state(name)
       raise InvalidStateError.new("No state defined with name #{name}") if found.nil?
+
       @__current_state = found
     end
 
