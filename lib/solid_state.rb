@@ -31,7 +31,7 @@ module SolidState
       pair.each do |from, to|
         @__transitions ||= {} 
         @__transitions[from] ||= {} 
-        @__transitions[from] = blk
+        @__transitions[from][to] = blk
       end
     end
   end
@@ -53,7 +53,7 @@ module SolidState
         trans = self.class.instance_variable_get('@__transitions')[from_state]
         if trans
           tran = trans[name]
-          self.instance_eval trans if tran
+          tran.call(self) if tran
         end
       end
       found = _find_state(name)
